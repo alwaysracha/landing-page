@@ -1,0 +1,15 @@
+{
+  "name": "karthik-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "serve": "python3 -m http.server -d dist 8000"
+  },
+  "dependencies": {
+    "animejs": "4.5.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}

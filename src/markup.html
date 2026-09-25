@@ -1,0 +1,209 @@
+<div class="bg" aria-hidden="true"></div>
+
+<header class="nav" data-ink="light">
+  <a class="nav__mark" href="#home" data-route="home"><span class="nav__sq" aria-hidden="true"></span>Karthik</a>
+  <nav class="nav__links" aria-label="Pages">
+    <span class="nav__pill" aria-hidden="true"></span>
+    <a href="#home" data-route="home">Home</a>
+    <a href="#about" data-route="about">About</a>
+  </nav>
+</header>
+
+<div class="wrap">
+
+<main id="view-home" class="view" data-view="home">
+
+  <section class="track track--hero" data-stage="restore">
+    <span class="bg-stop" data-bg="#1e1c1b" data-ink="light"></span>
+    <div class="stage hero pre">
+      <canvas class="field" aria-hidden="true"></canvas>
+      <div class="hero__top">
+        <p class="eyebrow hero__eyebrow"><span class="scr">Software engineer</span><span class="hero__sep" aria-hidden="true">/</span><span class="scr">.NET, now Python</span></p>
+        <p class="hero__cue mono" aria-hidden="true">Scroll<i></i></p>
+      </div>
+      <h1 class="hero__name" aria-label="Karthik"><span class="L" aria-hidden="true"><span>K</span></span><span class="L" aria-hidden="true"><span>a</span></span><span class="L" aria-hidden="true"><span>r</span></span><span class="L" aria-hidden="true"><span>t</span></span><span class="L" aria-hidden="true"><span>h</span></span><span class="L" aria-hidden="true"><span>i</span></span><span class="L" aria-hidden="true"><span>k</span></span></h1>
+      <div class="hero__foot">
+        <p class="hero__lead">I build backend systems in C# and .NET, and I'm learning Python in public.</p>
+        <p class="hero__log mono" aria-hidden="true"><span class="scr">$ dotnet restore</span><span class="scr">Restored karthik.csproj (in 212 ms).</span></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="track track--statement" data-stage="restore">
+    <span class="bg-stop" data-bg="#e8e2d9" data-ink="dark"></span>
+    <div class="stage statement">
+      <p class="eyebrow">whoami</p>
+      <p class="statement__text">I'm Karthik. I build dependable software on .NET: APIs, background services and the tests that keep them honest. Now I'm learning Python, and this site is where I show the work.</p>
+    </div>
+  </section>
+
+  <section class="track track--code" data-stage="build">
+    <span class="bg-stop" data-bg="#5536d0" data-ink="light"></span>
+    <span class="bg-stop" data-bg="#2b63b6" data-ink="light" data-fx="fade" style="top:46%"></span>
+    <div class="stage code">
+      <div class="code__meta">
+        <p class="eyebrow">build</p>
+        <h2 class="code__title">Same logic.<br>New syntax.</h2>
+        <p class="code__langs mono"><span class="code__lang is-on">C#</span><span class="code__bar" aria-hidden="true"><i></i></span><span class="code__lang">Python</span></p>
+        <p class="code__note">LINQ becomes a list comprehension. Keep scrolling to translate it.</p>
+      </div>
+      <figure class="code__fig">
+        <figcaption class="code__file mono"><span class="code__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="code__fname">Users.cs</span></figcaption>
+        <div class="code__box" aria-hidden="true"></div>
+        <div class="sr-only">
+          <p>In C#:</p>
+          <pre>var active = users.Where(u => u.IsActive).Select(u => u.Name).ToList();</pre>
+          <p>In Python:</p>
+          <pre>active = [u.name for u in users if u.is_active]</pre>
+        </div>
+      </figure>
+    </div>
+  </section>
+
+  <section class="track track--grid" data-stage="test">
+    <span class="bg-stop" data-bg="#1e1c1b" data-ink="light"></span>
+    <div class="stage grid">
+      <canvas class="tiles" aria-hidden="true"></canvas>
+      <div class="grid__copy">
+        <p class="eyebrow">test</p>
+        <ol class="grid__lines">
+          <li>Make it work.</li>
+          <li>Make it right.</li>
+          <li>Make it fast.</li>
+        </ol>
+        <p class="grid__credit">The order is Kent Beck's. I try to keep it.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="track track--work" data-stage="publish">
+    <span class="bg-stop" data-bg="#1e1c1b" data-ink="light"></span>
+    <div class="stage work">
+      <div class="work__head">
+        <div>
+          <p class="eyebrow">publish</p>
+          <h2 class="work__title">Selected work</h2>
+        </div>
+        <p class="work__count mono" aria-hidden="true"><span class="work__i">01</span> / 03</p>
+      </div>
+      <div class="work__rail">
+        <article class="card" data-deep="#211943" style="--c:#5536d0;--on:#e8e2d9">
+          <div class="card__art card__art--a" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="card__body">
+            <p class="card__n mono">01</p>
+            <h3 class="card__title">Orders API</h3>
+            <p class="card__text">An ASP.NET Core service with idempotent writes, retries and health checks.</p>
+            <ul class="card__tags mono"><li>C#</li><li>ASP.NET Core</li><li>PostgreSQL</li></ul>
+          </div>
+        </article>
+        <article class="card" data-deep="#12233b" style="--c:#2b63b6;--on:#e8e2d9">
+          <div class="card__art card__art--b" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="card__body">
+            <p class="card__n mono">02</p>
+            <h3 class="card__title">Python field notes</h3>
+            <p class="card__text">Short write-ups on what carries over from C# to Python, with the scripts that prove it.</p>
+            <ul class="card__tags mono"><li>Python</li><li>pytest</li><li>uv</li></ul>
+          </div>
+        </article>
+        <article class="card" data-deep="#302910" style="--c:#ffd23f;--on:#1e1c1b">
+          <div class="card__art card__art--c" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="card__body">
+            <p class="card__n mono">03</p>
+            <h3 class="card__title">This site</h3>
+            <p class="card__text">Two pages of scroll-driven scenes, built on one rule: animate only transform and opacity.</p>
+            <ul class="card__tags mono"><li>HTML</li><li>CSS</li><li>anime.js</li></ul>
+          </div>
+        </article>
+        <a class="card card--end" href="https://github.com/" target="_blank" rel="noopener"><span>More on GitHub</span><span class="card__arrow" aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<main id="view-about" class="view" data-view="about">
+
+  <section class="track track--ahero" data-stage="whoami">
+    <span class="bg-stop" data-bg="#e8e2d9" data-ink="dark"></span>
+    <div class="stage ahero pre">
+      <div class="ahero__text">
+        <p class="eyebrow ahero__eyebrow"><span class="scr">about</span></p>
+        <h1 class="ahero__title">Hi, I'm Karthik.</h1>
+        <p class="ahero__lead">Software engineer. Years of C# and .NET. Currently learning Python.</p>
+      </div>
+      <figure class="ahero__fig">
+        <svg class="glyph" viewBox="56 16 288 268" aria-hidden="true">
+          <g class="glyph__targets" opacity="0">
+            <path class="glyph__t1" d="M 194 118 a 8 8 0 1 0 16 0 a 8 8 0 1 0 -16 0"/>
+            <path class="glyph__t2" d="M 194 190 a 8 8 0 1 0 16 0 a 8 8 0 1 0 -16 0"/>
+          </g>
+          <path class="glyph__a" pathLength="1" d="M 150 40 C 108 40 108 62 108 100 L 108 122 C 108 140 98 150 80 150 C 98 150 108 160 108 178 L 108 200 C 108 238 108 260 150 260"/>
+          <path class="glyph__b" pathLength="1" d="M 250 40 C 292 40 292 62 292 100 L 292 122 C 292 140 302 150 320 150 C 302 150 292 160 292 178 L 292 200 C 292 238 292 260 250 260"/>
+          <g class="glyph__indent"><rect x="236" y="182" width="16" height="16" rx="3"/><rect x="262" y="182" width="16" height="16" rx="3"/><rect x="288" y="182" width="16" height="16" rx="3"/><rect x="314" y="182" width="16" height="16" rx="3"/></g>
+        </svg>
+        <figcaption class="ahero__cap mono"><span class="cap__a">{ } in C#</span><span class="cap__b">: and four spaces in Python</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="story" data-stage="story">
+    <span class="bg-stop" data-bg="#1e1c1b" data-ink="light"></span>
+    <div class="story__inner">
+      <p class="eyebrow">story</p>
+      <div class="story__cols">
+        <p class="story__p">I've spent years building software in C# and .NET: web APIs, background workers and the SQL that sits behind them.</p>
+        <p class="story__p">I like software that loads quickly, changes easily and stays boring in production. Fewer moving parts, clearer names, better tests.</p>
+        <p class="story__p">Now I'm learning Python. I write down what carries over from C#, what doesn't, and the small tools I build along the way.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="track track--rosetta" data-stage="translate">
+    <span class="bg-stop" data-bg="#5536d0" data-ink="light"></span>
+    <span class="bg-stop" data-bg="#2b63b6" data-ink="light" data-fx="fade" style="top:52%"></span>
+    <div class="stage rosetta">
+      <div class="rosetta__head">
+        <p class="eyebrow">translate</p>
+        <h2 class="rosetta__title">What carries over</h2>
+        <p class="rosetta__count mono"><span class="rc">0</span> of 8 translated</p>
+      </div>
+      <ul class="rosetta__list">
+        <li class="ro"><span class="ro__in"><span class="ro__f ro__cs"><em>C#</em>LINQ</span><span class="ro__f ro__py"><em>Python</em>list comprehensions</span></span></li>
+        <li class="ro"><span class="ro__in"><span class="ro__f ro__cs"><em>C#</em>async / await</span><span class="ro__f ro__py"><em>Python</em>asyncio</span></span></li>
+        <li class="ro"><span class="ro__in"><span class="ro__f ro__cs"><em>C#</em>NuGet</span><span class="ro__f ro__py"><em>Python</em>pip and PyPI</span></span></li>
+        <li class="ro"><span class="ro__in"><span class="ro__f ro__cs"><em>C#</em>xUnit</span><span class="ro__f ro__py"><em>Python</em>pytest</span></span></li>
+        <li class="ro"><span class="ro__in"><span class="ro__f ro__cs"><em>C#</em>Entity Framework</span><span class="ro__f ro__py"><em>Python</em>SQLAlchemy</span></span></li>
+        <li class="ro"><span class="ro__in"><span class="ro__f ro__cs"><em>C#</em>ASP.NET Core</span><span class="ro__f ro__py"><em>Python</em>FastAPI</span></span></li>
+        <li class="ro"><span class="ro__in"><span class="ro__f ro__cs"><em>C#</em>interfaces</span><span class="ro__f ro__py"><em>Python</em>protocols</span></span></li>
+        <li class="ro"><span class="ro__in"><span class="ro__f ro__cs"><em>C#</em>dotnet CLI</span><span class="ro__f ro__py"><em>Python</em>uv</span></span></li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer class="contact" data-stage="publish">
+  <span class="bg-stop" data-bg="#ff6a3d" data-ink="dark"></span>
+  <div class="contact__inner">
+    <p class="eyebrow">publish</p>
+    <h2 class="contact__big" aria-label="Let's build something."><span class="cline" aria-hidden="true">Let's build</span><span class="cline" aria-hidden="true">something.</span></h2>
+    <div class="contact__row">
+      <button class="copy" type="button" data-copy="karthik@example.com"><span class="copy__addr">karthik@example.com</span><span class="copy__label mono">Copy</span></button>
+      <a class="contact__link" href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
+      <a class="contact__link" href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+    <div class="contact__end">
+      <p class="contact__log mono" aria-label="Build succeeded, no warnings, no errors"><span>Build succeeded.</span><span>&nbsp;&nbsp;&nbsp;&nbsp;0 Warning(s)</span><span>&nbsp;&nbsp;&nbsp;&nbsp;0 Error(s)</span><span class="elapsed">Time Elapsed 00:00:00.00</span></p>
+      <p class="contact__foot mono">© 2026 Karthik. Animated with anime.js.</p>
+    </div>
+  </div>
+</footer>
+
+</div>
+
+<nav class="pipe" data-ink="light" aria-label="Page progress">
+  <div class="pipe__labels"></div>
+  <div class="pipe__bar" aria-hidden="true"><i class="pipe__fill"></i></div>
+</nav>
+
+<div class="curtain" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><p class="curtain__cmd mono">$ cd about</p></div>
