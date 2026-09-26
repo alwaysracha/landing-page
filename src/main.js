@@ -4,7 +4,7 @@ import {
 } from 'animejs';
 
 /* ============================================================
-   Karthik — scroll-driven site
+   Karthik Racha — scroll-driven site
    Rules: animate only transform + opacity (and canvas pixels),
    pin with position:sticky, measure once per resize.
    ============================================================ */
@@ -14,6 +14,7 @@ const root = d.documentElement;
 const $ = (s, r = d) => r.querySelector(s);
 const $$ = (s, r = d) => [...r.querySelectorAll(s)];
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+const inOut3 = (t) => (t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2);
 const mqReduce = matchMedia('(prefers-reduced-motion: reduce)');
 const mqFine = matchMedia('(hover: hover) and (pointer: fine)');
 let REDUCE = mqReduce.matches;
@@ -66,6 +67,7 @@ const Chrome = (() => {
   const labels = $('.pipe__labels');
   const fill = $('.pipe__fill');
   const sq = $('.nav__sq');
+  let scope = [];
   let stops = [];
   let layers = [];
   let groups = [];
@@ -75,10 +77,7 @@ const Chrome = (() => {
   let active = -1;
 
   function build(view) {
-    const scope = [view, contactEl];
-    stops = scope.flatMap((el) => $$('.bg-stop', el)).map((el) => ({
-      el, color: el.dataset.bg, ink: el.dataset.ink || 'light', wipe: el.dataset.fx !== 'fade', y: 0,
-    }));
+    scope = [view, contactEl];
     // stage groups for the scrubber
     groups = [];
     for (const el of [...$$('[data-stage]', view), contactEl]) {
@@ -106,7 +105,11 @@ const Chrome = (() => {
   function measure() {
     H = innerHeight;
     const sy = scrollY;
-    for (const s of stops) s.y = s.el.getBoundingClientRect().top + sy;
+    // read the stops fresh: scenes built in idle time (the card rails) add their own
+    stops = scope.flatMap((el) => $$('.bg-stop', el)).map((el) => ({
+      color: el.dataset.bg, ink: el.dataset.ink || 'light', wipe: el.dataset.fx !== 'fade',
+      y: el.getBoundingClientRect().top + sy,
+    }));
     stops.sort((a, b) => a.y - b.y);
     host.textContent = '';
     layers = stops.map((s, i) => {
@@ -348,98 +351,275 @@ function sceneStatement(view) {
 }
 
 /* ============================================================
-   Home · build — C# tokens travel into their Python positions
+   Home · build — one app splits into services, gets wired up and scales out,
+   while the keyword pills float behind it
    ============================================================ */
-const CS = [
-  [['var', 'kw', 'v'], ' ', ['active', 'id', 'active'], ' ', ['=', 'op', 'eq'], ' ', ['users', 'id', 'users']],
-  ['    ', ['.Where', 'fn', 'wh'], ['(', 'p', 'p1'], ['u', 'id', 'u1'], ' ', ['=>', 'op', 'ar1'], ' ', ['u', 'id', 'u2'], ['.', 'p', 'd1'], ['IsActive', 'pr', 'act'], [')', 'p', 'c1']],
-  ['    ', ['.Select', 'fn', 'se'], ['(', 'p', 'p2'], ['u', 'id', 'u3'], ' ', ['=>', 'op', 'ar2'], ' ', ['u', 'id', 'u4'], ['.', 'p', 'd2'], ['Name', 'pr', 'nm'], [')', 'p', 'c2']],
-  ['    ', ['.ToList', 'fn', 'tl'], ['()', 'p', 'tp'], [';', 'p', 'sc']],
-];
-const PY = [
-  [['active', 'id', 'active'], ' ', ['=', 'op', 'eq'], ' ', ['[', 'p', 'bo']],
-  ['    ', ['u', 'id', 'u4'], ['.', 'p', 'd2'], ['name', 'pr', 'nm']],
-  ['    ', ['for', 'kw', 'for'], ' ', ['u', 'id', 'u1'], ' ', ['in', 'kw', 'in'], ' ', ['users', 'id', 'users']],
-  ['    ', ['if', 'kw', 'if'], ' ', ['u', 'id', 'u2'], ['.', 'p', 'd1'], ['is_active', 'pr', 'act']],
-  [[']', 'p', 'bc']],
-];
+/** Rounded-rect path with one radius per corner: top-left, top-right, bottom-right, bottom-left. */
+function roundRect(ctx, x, y, w, h, [tl, tr, br, bl]) {
+  ctx.moveTo(x + tl, y);
+  ctx.arcTo(x + w, y, x + w, y + h, tr);
+  ctx.arcTo(x + w, y + h, x, y + h, br);
+  ctx.arcTo(x, y + h, x, y, bl);
+  ctx.arcTo(x, y, x + w, y, tl);
+  ctx.closePath();
+}
 
-function sceneCode(view) {
-  const track = $('.track--code', view);
-  const box = $('.code__box', track);
-  const fname = $('.code__fname', track);
-  const langs = $$('.code__lang', track);
-  const bar = $('.code__bar i', track);
-  box.textContent = '';
-  box.classList.remove('is-static');
-  box.removeAttribute('style');
+function sceneArch(view) {
+  const track = $('.track--arch', view);
+  const stage = $('.arch', track);
+  const cv = $('.arch__cv', stage);
+  const steps = $$('.arch__step', stage);
+  const bars = $$('.arch__bar i', stage);
+  const kws = $$('.arch__kw li', stage);
+  const ctx = cv.getContext('2d');
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  const W = cv.clientWidth; const H = cv.clientHeight;
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  const mobile = W < 760;
 
-  const makePre = (lines) => {
-    const pre = d.createElement('pre');
-    pre.className = 'code__m';
-    lines.forEach((line) => {
-      line.forEach((t) => {
-        if (typeof t === 'string') { pre.append(t); return; }
-        const s = d.createElement('span');
-        s.textContent = t[0]; s.className = `t-${t[1]}`; s.dataset.k = t[2];
-        pre.append(s);
-      });
-      pre.append('\n');
-    });
-    box.append(pre);
-    return pre;
+  // the diagram takes the space the text leaves: the right column, or above the text on phones
+  const cs = getComputedStyle(stage);
+  const padX = parseFloat(cs.paddingLeft); const padT = parseFloat(cs.paddingTop); const padB = parseFloat(cs.paddingBottom);
+  const sb = stage.getBoundingClientRect(); const mb = $('.arch__meta', stage).getBoundingClientRect();
+  const text = [mb.left - sb.left, mb.top - sb.top, mb.right - sb.left, mb.bottom - sb.top];
+  const nh = mobile ? 36 : 50;
+  const gap = parseFloat(cs.columnGap);
+  const area = mobile
+    ? { x: padX, y: padT, w: W - padX * 2, h: Math.max(nh * 5, text[1] - 28 - padT) }
+    : { x: text[2] + gap, y: padT, w: W - padX - text[2] - gap, h: H - padT - padB };
+  const nw = Math.min(area.w * (mobile ? 0.28 : 0.27), mobile ? 118 : 200);
+  const off = mobile ? 5 : 8; // replica offset; the right edge keeps room for two
+  const X = (u) => area.x + nw / 2 + (area.w - nw - off * 2) * u;
+  const Y = (v) => area.y + nh / 2 + (area.h - nh) * v;
+  const cx = X(0.5);
+  const gw = { x: cx, y: Y(0.12), label: 'gateway' };
+  const svc = ['identity', 'orders', 'billing'].map((label, k) => ({ x: X(k / 2), y: Y(0.5), label }));
+  const data = [{ x: X(0.25), y: Y(0.88), label: 'queue' }, { x: X(0.75), y: Y(0.88), label: 'sql' }];
+  const top = area.y - (mobile ? 6 : 14); // requests arrive from above
+  const y1 = (gw.y + svc[0].y) / 2; const y2 = (svc[0].y + data[0].y) / 2;
+  const rad = mobile ? 9 : 12; const font = `500 ${mobile ? 10.5 : 13}px "Martian Mono", ui-monospace, monospace`;
+  const sq = mobile ? 5 : 7; const ps = mobile ? 5 : 6;
+
+  // connectors: [x0, y0, x1, y1, start, end] in wire progress; buses draw outward from the centre
+  const E = [
+    [cx, top, cx, gw.y - nh / 2, 0.3, 0.42],
+    [cx, gw.y + nh / 2, cx, y1, 0.4, 0.5],
+    [cx, y1, svc[0].x, y1, 0.48, 0.6], [cx, y1, svc[2].x, y1, 0.48, 0.6],
+    ...svc.map((s) => [s.x, y1, s.x, s.y - nh / 2, 0.58, 0.66]),
+    ...svc.map((s) => [s.x, s.y + nh / 2, s.x, y2, 0.64, 0.72]),
+    [cx, y2, svc[0].x, y2, 0.7, 0.82], [cx, y2, svc[2].x, y2, 0.7, 0.82],
+    ...data.map((n) => [n.x, y2, n.x, n.y - nh / 2, 0.8, 0.9]),
+  ];
+  // request routes: in through the gateway, over a bus to a service, down to the queue or the database
+  const routes = svc.flatMap((s) => data.map((n) => {
+    const pts = [[cx, top], [cx, y1], [s.x, y1], [s.x, y2], [n.x, y2], [n.x, n.y]];
+    const cum = [0];
+    for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+    return { pts, cum, len: cum[cum.length - 1] };
+  }));
+  const pointAt = (rt, s) => {
+    let i = 1;
+    while (i < rt.pts.length - 1 && rt.cum[i] < s) i++;
+    const a = rt.pts[i - 1]; const b = rt.pts[i]; const l = rt.cum[i] - rt.cum[i - 1];
+    const u = l ? (s - rt.cum[i - 1]) / l : 1;
+    return [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u];
   };
-  const preA = makePre(CS);
-  const preB = makePre(PY);
-  if (REDUCE) { box.classList.add('is-static'); return; }
 
-  const read = (pre) => {
-    const m = new Map();
-    for (const s of pre.querySelectorAll('span')) m.set(s.dataset.k, { x: s.offsetLeft, y: s.offsetTop, text: s.textContent, cls: s.className });
-    return m;
-  };
-  const A = read(preA);
-  const B = read(preB);
-  box.style.width = `${Math.max(preA.offsetWidth, preB.offsetWidth)}px`;
-  box.style.height = `${Math.max(preA.offsetHeight, preB.offsetHeight)}px`;
-  preA.remove(); preB.remove();
-
-  const gone = []; const born = []; const move = []; const swapA = []; const swapB = [];
-  const keys = [...A.keys(), ...[...B.keys()].filter((k) => !A.has(k))];
-  for (const k of keys) {
-    const a = A.get(k); const b = B.get(k); const p = a || b;
-    const el = d.createElement('span');
-    el.className = `tok ${p.cls}`;
-    el.style.left = `${p.x}px`; el.style.top = `${p.y}px`;
-    if (a && b && a.text !== b.text) {
-      const ta = d.createElement('span'); ta.textContent = a.text;
-      const tb = d.createElement('span'); tb.className = 'tb'; tb.textContent = b.text;
-      el.append(ta, tb); swapA.push(ta); swapB.push(tb);
-    } else el.textContent = p.text;
-    box.append(el);
-    if (a && b) move.push({ el, dx: b.x - a.x, dy: b.y - a.y });
-    else if (a) gone.push(el);
-    else born.push(el);
-  }
-  utils.set([...born, ...swapB], { opacity: 0 });
-
-  let py = false;
-  const tl = scrub(track, {
-    onUpdate: (self) => {
-      const now = self.progress > 0.52;
-      if (now === py) return;
-      py = now;
-      langs[0].classList.toggle('is-on', !py);
-      langs[1].classList.toggle('is-on', py);
-      scramble(fname, py ? 'users.py' : 'Users.cs', { settleDuration: 200 });
-    },
+  // keywords: scattered clear of the text, the nodes and the connectors, three depths, each on its own
+  // slow drift; placed so their scroll parallax never carries them under the nav or the pipeline
+  const DEPTH = [['is-far', 10], ['', 22], ['is-near', 40]]; // [class, parallax in px]
+  const rel = (el) => { const r = el.getBoundingClientRect(); return [r.left - sb.left, r.top - sb.top, r.right - sb.left, r.bottom - sb.top]; };
+  // [x0, y0, x1, y1, cost, drift]: drift = 1 where a keyword's scroll travel must be kept clear too
+  const blocks = [
+    // phones have no room to spare, so keywords may end up behind the big title (never the small type)
+    ...(mobile
+      ? [[...rel($('.arch__title', stage)), 0.2, 0], ...$$('.eyebrow, .arch__steps', stage).map((el) => [...rel(el), 1, 1])]
+      : [[...text, 1, 1]]),
+    [svc[0].x - nw / 2, svc[0].y - nh / 2 - off * 2, svc[2].x + nw / 2 + off * 2, svc[0].y + nh / 2, 1, 1],
+    ...[gw, ...data].map((n) => [n.x - nw / 2, n.y - nh / 2, n.x + nw / 2, n.y + nh / 2, 1, 1]),
+    ...E.map(([ax, ay, bx, by]) => (ax === bx
+      ? [ax - 6, Math.min(ay, by), ax + 6, Math.max(ay, by), 1, 1]
+      : [Math.min(ax, bx) - 6, ay - 6, Math.max(ax, bx) + 6, ay + 6, 1, 0])),
+  ];
+  const overlap = (a, b) => Math.max(0, Math.min(a[2], b[2]) - Math.max(a[0], b[0])) * Math.max(0, Math.min(a[3], b[3]) - Math.max(a[1], b[1]));
+  const cost = (c, amp) => blocks.reduce((s, [x0, y0, x1, y1, k, g]) => s + k * overlap(c, [x0, y0 - g * amp, x1, y1 + g * amp]), 0);
+  const KR = seeded(29);
+  kws.forEach((li) => {
+    const [cls, depthAmp] = DEPTH[Math.floor(KR() * 3)];
+    const amp = mobile ? depthAmp / 2 : depthAmp;
+    li.className = cls;
+    const w = li.offsetWidth; const h = li.offsetHeight; const m = 10;
+    let best = null; let bestHit = Infinity;
+    for (let t = 0; t < 60 && bestHit > 0; t++) {
+      const x = padX + KR() * Math.max(0, W - padX * 2 - w);
+      const y = padT + amp + KR() * Math.max(0, H - padT - padB - h - amp * 2);
+      const cand = [x - m, y - m, x + w + m, y + h + m];
+      const hit = cost(cand, amp);
+      if (hit < bestHit) { bestHit = hit; best = cand; }
+    }
+    blocks.push([...best, 1, 0]);
+    li.style.left = `${(best[0] + m).toFixed(1)}px`;
+    li.style.top = `${(best[1] + m).toFixed(1)}px`;
+    li.style.setProperty('--kx', `${((KR() - 0.5) * (12 + amp / 2)).toFixed(1)}px`);
+    li.style.setProperty('--ky', `${((KR() - 0.5) * (12 + amp / 2)).toFixed(1)}px`);
+    li.style.setProperty('--kd', `${(8 + KR() * 7).toFixed(1)}s`);
+    li.style.setProperty('--kl', `${(-KR() * 15).toFixed(1)}s`);
+    li._p = amp;
   });
-  tl.add(gone, { opacity: [1, 0], y: [0, -18], rotate: [0, -6], duration: 200, ease: 'in(2)' }, stagger(14, { start: 150 }));
-  move.forEach((m, i) => tl.add(m.el, { x: [0, m.dx], y: [0, m.dy], duration: 340, ease: 'inOut(3)' }, 250 + i * 16));
-  tl.add(swapA, { opacity: [1, 0], duration: 120 }, 440)
-    .add(swapB, { opacity: [0, 1], duration: 120 }, 440)
-    .add(born, { opacity: [0, 1], y: [22, 0], duration: 220, ease: 'out(3)' }, stagger(34, { start: 590 }))
-    .add(bar, { scaleX: [0, 1], duration: 640 }, 160);
+
+  const ph = { split: 0, wire: 0, scale: 0 };
+  let packets = [];
+
+  const box = (x, y, w, a, r = [rad, rad, rad, rad]) => {
+    if (a <= 0.01) return;
+    ctx.globalAlpha = a;
+    ctx.fillStyle = INK.light;
+    ctx.beginPath(); roundRect(ctx, x - w / 2, y - nh / 2, w, nh, r); ctx.fill();
+  };
+  // a label reads like an eyebrow: a small square, then the name
+  const label = (name, x, y, a, suffix = '', sa = 0) => {
+    if (a <= 0.01) return;
+    const lead = sq * 2 + 1; // the square and the gap after it
+    const tw = ctx.measureText(name).width;
+    const x0 = x - (lead + tw + (suffix ? ctx.measureText(suffix).width * sa : 0)) / 2;
+    ctx.globalAlpha = a;
+    ctx.fillStyle = INK.dark;
+    ctx.fillRect(x0, y - sq / 2, sq, sq);
+    ctx.fillText(name, x0 + lead, y + 1);
+    if (suffix && sa > 0.01) { ctx.globalAlpha = a * sa; ctx.fillText(suffix, x0 + lead + tw, y + 1); }
+  };
+
+  const draw = () => {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    ctx.font = font;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    const sp = inOut3(ph.split); const sc = inOut3(ph.scale); const wi = ph.wire;
+
+    ctx.globalAlpha = 0.5;
+    ctx.strokeStyle = INK.light;
+    ctx.lineWidth = mobile ? 1.5 : 2;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (const [ax, ay, bx, by, t0, t1] of E) {
+      const f = clamp((wi - t0) / (t1 - t0), 0, 1);
+      if (f) { ctx.moveTo(ax, ay); ctx.lineTo(ax + (bx - ax) * f, ay + (by - ay) * f); }
+    }
+    ctx.stroke();
+
+    const pa = clamp((wi - 0.86) / 0.14, 0, 1);
+    if (pa > 0) {
+      ctx.globalAlpha = pa;
+      ctx.fillStyle = PALETTE[2];
+      for (const p of packets) { const [x, y] = pointAt(p.rt, p.s); ctx.fillRect(x - ps / 2, y - ps / 2, ps, ps); }
+    }
+
+    // scale: two replicas stack up behind each service
+    if (sc > 0) {
+      const o = off * sc;
+      for (const s of svc) { box(s.x + o * 2, s.y - o * 2, nw, 0.28 * sc); box(s.x + o, s.y - o, nw, 0.5 * sc); }
+    }
+
+    // split: the monolith's thirds pull apart into three services
+    const L = svc[0].x - nw / 2; const third = (svc[2].x + nw / 2 - L) / 3; const ri = rad * sp;
+    svc.forEach((s, k) => {
+      const from = L + third * (k + 0.5);
+      const r = k === 0 ? [rad, ri, ri, rad] : k === 1 ? [ri, ri, ri, ri] : [ri, rad, rad, ri];
+      box(from + (s.x - from) * sp, s.y, third + (nw - third) * sp + (1 - sp), 1, r); // +1px while joined hides the seams
+    });
+
+    // wire: the gateway drops in from above, the data stores rise from below
+    const ga = clamp(wi / 0.3, 0, 1); const da = clamp((wi - 0.1) / 0.3, 0, 1);
+    const gy = gw.y - (1 - inOut3(ga)) * 24; const dy = (1 - inOut3(da)) * 24;
+    box(gw.x, gy, nw, ga);
+    for (const n of data) box(n.x, n.y + dy, nw, da);
+
+    label('app', cx, svc[0].y, 1 - clamp(ph.split / 0.3, 0, 1));
+    const la = clamp((ph.split - 0.45) / 0.4, 0, 1);
+    for (const s of svc) label(s.label, s.x, s.y, la, ' ×3', sc);
+    label(gw.label, gw.x, gy, ga);
+    for (const n of data) label(n.label, n.x, n.y + dy, da);
+  };
+
+  let on = -1;
+  const syncSteps = () => {
+    const i = ph.split < 0.999 ? 0 : ph.wire < 0.999 ? 1 : 2;
+    if (i !== on) { on = i; steps.forEach((s, j) => s.classList.toggle('is-on', j === i)); }
+  };
+
+  if (REDUCE) {
+    // the finished system, with a few requests caught mid-flight
+    ph.split = 1; ph.wire = 1; ph.scale = 1;
+    const R = seeded(3);
+    packets = routes.concat(routes.slice(0, 3)).map((rt) => ({ rt, s: rt.len * (0.1 + R() * 0.8) }));
+    utils.set(bars, { scaleX: 1 });
+    syncSteps();
+    draw();
+    return;
+  }
+
+  // requests flow once the wiring is in, and pick up as the services scale; idle = zero work
+  const R = seeded(7);
+  let raf = 0; let last = 0; let debt = 0; let visible = false;
+  const frame = (t) => {
+    raf = 0;
+    const dt = last ? Math.min((t - last) / 1000, 0.05) : 0;
+    last = t;
+    const rate = clamp((ph.wire - 0.9) / 0.1, 0, 1) * (mobile ? 1.8 : 2.4) * (1 + 1.5 * inOut3(ph.scale));
+    for (debt += rate * dt; debt >= 1; debt--) {
+      const k = R() < 0.4 ? 1 : R() < 0.5 ? 0 : 2; // orders is the busy one
+      packets.push({ rt: routes[k * 2 + (R() < 0.55 ? 1 : 0)], s: 0, v: (mobile ? 140 : 200) * (0.85 + R() * 0.3) });
+    }
+    packets = packets.filter((p) => (p.s += p.v * dt) < p.rt.len);
+    draw();
+    if (visible && (rate > 0 || packets.length)) raf = requestAnimationFrame(frame);
+    else last = 0;
+  };
+  const kick = () => { if (!raf) raf = requestAnimationFrame(frame); };
+  const io = new IntersectionObserver(([e]) => {
+    visible = e.isIntersecting;
+    stage.classList.toggle('is-live', visible);
+    if (visible) kick();
+  });
+  io.observe(stage);
+
+  utils.set(bars, { scaleX: 0 });
+  draw();
+  scrub(track, { onUpdate: () => { syncSteps(); kick(); } })
+    .add(ph, { split: [0, 1], duration: 250 }, 70)
+    .add(bars[0], { scaleX: [0, 1], duration: 250 }, 70)
+    .add(ph, { wire: [0, 1], duration: 290 }, 360)
+    .add(bars[1], { scaleX: [0, 1], duration: 290 }, 360)
+    .add(ph, { scale: [0, 1], duration: 230 }, 700)
+    .add(kws, { y: [(el) => el._p, (el) => -el._p], duration: 1000 }, 0);
+
+  return () => { cancelAnimationFrame(raf); io.disconnect(); stage.classList.remove('is-live'); };
+}
+
+/* ============================================================
+   Home · run — the home lab's services come up one by one
+   ============================================================ */
+function sceneLab(view) {
+  const track = $('.track--lab', view);
+  const rows = $$('.up', track);
+  const dots = $$('.up__dot i', track);
+  const count = $('.lab__count', track);
+  const say = (k) => { count.textContent = `${k} of ${rows.length} up`; };
+  if (REDUCE) { say(rows.length); return; }
+  const START = 140; const STEP = 84; const DUR = 110;
+  let n = 0;
+  say(0);
+  utils.set(rows, { opacity: 0.28 });
+  utils.set(dots, { scale: 0 });
+  scrub(track, {
+    onUpdate: (self) => {
+      const k = clamp(Math.floor((self.progress * 1000 - START - DUR / 2) / STEP) + 1, 0, rows.length);
+      if (k !== n) { n = k; say(k); }
+    },
+  })
+    .add(rows, { opacity: [0.28, 1], duration: DUR / 2 }, stagger(STEP, { start: START }))
+    .add(dots, { scale: [0, 1], duration: DUR, ease: 'outBack(2)' }, stagger(STEP, { start: START }));
 }
 
 /* ============================================================
@@ -485,7 +665,6 @@ function sceneGrid(view) {
   }
   const spanA = DA + Math.max(...tiles.map((t) => t.da));
   const spanB = DB + Math.max(...tiles.map((t) => t.db));
-  const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2);
   const ph = { a: 0, b: 0 };
   const sw = cw * 1.9; const sh = Math.max(2, size * 0.16);
 
@@ -494,8 +673,8 @@ function sceneGrid(view) {
     ctx.clearRect(0, 0, W, H);
     const ta = ph.a * spanA; const tb = ph.b * spanB;
     for (const t of tiles) {
-      const a = ease(clamp((ta - t.da) / DA, 0, 1));
-      const b = ease(clamp((tb - t.db) / DB, 0, 1));
+      const a = inOut3(clamp((ta - t.da) / DA, 0, 1));
+      const b = inOut3(clamp((tb - t.db) / DB, 0, 1));
       let x = t.x0 + (t.x1 - t.x0) * a;
       const y = t.y0 + (t.y1 - t.y0) * a;
       let w = t.w0 + (size - t.w0) * a;
@@ -527,7 +706,7 @@ function sceneGrid(view) {
 }
 
 /* ============================================================
-   Home · publish — vertical scroll drives a 3D card rail
+   Card rails (Home · credentials, About · clients) — vertical scroll drives a 3D rail
    ============================================================ */
 function sceneWork(view) {
   const track = $('.track--work', view);
@@ -546,7 +725,7 @@ function sceneWork(view) {
   const geo = cards.map((c) => ({ c, cx: c.offsetLeft + c.offsetWidth / 2, art: $('.card__art', c) }));
   const RAIL_START = 150; const RAIL_LEN = 700;
 
-  // one background stop per project card, timed to when it reaches the centre
+  // one background stop per card, timed to when it reaches the centre
   geo.forEach(({ c, cx }) => {
     if (!c.dataset.deep) return;
     const p = clamp((cx - vw / 2) / (dist || 1), 0, 1);
@@ -675,13 +854,13 @@ function sceneContact() {
 }
 
 /* ============================================================
-   About · whoami — braces morph into a colon and four spaces
+   About · whoami — code braces open into a hub and four nodes
    ============================================================ */
 function sceneAboutHero(view) {
   const track = $('.track--ahero', view);
   const stage = $('.ahero', track);
   const a = $('.glyph__a', stage); const b = $('.glyph__b', stage);
-  const dots = $$('.glyph__indent rect', stage);
+  const dots = $$('.glyph__nodes rect', stage);
   const capA = $('.cap__a', stage); const capB = $('.cap__b', stage);
   const title = $('.ahero__title', stage);
 
@@ -702,8 +881,8 @@ function sceneAboutHero(view) {
   utils.set(dots, { scale: 0, opacity: 0 });
   utils.set(capB, { opacity: 0.3 });
   scrub(track)
-    .add(a, { d: svg.morphTo($('.glyph__t1', stage), 0.6), duration: 420, ease: 'inOut(3)' }, 180)
-    .add(b, { d: svg.morphTo($('.glyph__t2', stage), 0.6), duration: 420, ease: 'inOut(3)' }, 230)
+    .add(a, { d: svg.morphTo($('.glyph__ta', stage), 0.6), duration: 420, ease: 'inOut(3)' }, 180)
+    .add(b, { d: svg.morphTo($('.glyph__tb', stage), 0.6), duration: 420, ease: 'inOut(3)' }, 230)
     .add(dots, { scale: [0, 1], opacity: [0, 1], duration: 160, ease: 'outBack(2)' }, stagger(45, { start: 640 }))
     .add(capA, { opacity: [1, 0.3], duration: 120 }, 470)
     .add(capB, { opacity: [0.3, 1], duration: 120 }, 470);
@@ -757,10 +936,10 @@ function sceneStory(view) {
 }
 
 /* ============================================================
-   About · translate — split-flap rows flip from C# to Python
+   About · stack — split-flap rows flip from each area to its tools
    ============================================================ */
-function sceneRosetta(view) {
-  const track = $('.track--rosetta', view);
+function sceneStack(view) {
+  const track = $('.track--stack', view);
   const rows = $$('.ro__in', track);
   const count = $('.rc', track);
   if (REDUCE) { count.textContent = rows.length; return; }
@@ -786,8 +965,8 @@ const whenIdle = (fn) => (window.requestIdleCallback ? requestIdleCallback(fn, {
 function build(name) {
   const view = views[name];
   const scenes = name === 'home'
-    ? [sceneHero, sceneStatement, sceneCode, sceneGrid, sceneWork]
-    : [sceneAboutHero, sceneStory, sceneRosetta];
+    ? [sceneHero, sceneStatement, sceneArch, sceneLab, sceneGrid, sceneWork]
+    : [sceneAboutHero, sceneStory, sceneWork, sceneStack];
   const jobs = [...scenes.map((f) => () => f(view)), () => sceneContact()];
   const token = ++buildToken;
   const run = (job) => scopes.push(createScope().add(() => job()));

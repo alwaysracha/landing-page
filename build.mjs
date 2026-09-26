@@ -6,8 +6,8 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 
 const ANIME_CDN = 'https://cdn.jsdelivr.net/npm/animejs@4.5.0/dist/bundles/anime.umd.min.js';
 const FONTS = 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400..800&family=Martian+Mono:wght@400..600&display=swap';
-const TITLE = 'Karthik in Motion';
-const DESC = 'Karthik, software engineer: C# and .NET, now learning Python.';
+const TITLE = 'Karthik Racha';
+const DESC = 'Karthik Racha, software engineer and architect: .NET, SQL Server and Azure.';
 
 const css = readFileSync('src/styles.css', 'utf8');
 const markup = readFileSync('src/markup.html', 'utf8');
@@ -25,7 +25,7 @@ writeFileSync('dist/index.html', `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Karthik</title>
+<title>${TITLE}</title>
 <meta name="description" content="${DESC}">
 <meta name="theme-color" content="#1e1c1b">
 <script>${preboot}</script>
